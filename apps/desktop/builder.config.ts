@@ -8,7 +8,7 @@
 
 import {STUDIO_HUB_PROTOCOL} from './app/desktop-protocol'
 
-const {S3_BUCKET_KEY, DEPLOY_PATH, CDN_URL} = process.env
+const {RELEASE} = process.env
 
 const suffix = process.env.DEPLOY_STAGE === 'prod' ? '' : ` (${process.env.DEPLOY_STAGE})`
 const name = `8th Wall${suffix}`
@@ -17,6 +17,8 @@ export default {
   appId: STUDIO_HUB_PROTOCOL,
   productName: name,
   executableName: name,
+  // eslint-disable-next-line no-template-curly-in-string
+  artifactName: '8th-Wall-${version}-${os}-${arch}.${ext}',
   extraMetadata: {
     name,
   },
@@ -95,16 +97,17 @@ export default {
       sign: './windows-sign.js',
     },
   },
-  publish: [
-    {
-      provider: 'generic',
-      url: CDN_URL,
-    }, {
-      provider: 's3',
-      bucket: `${S3_BUCKET_KEY}`,
-      region: 'us-west-2',
-      path: `/${DEPLOY_PATH}`,
-      acl: null,
-    },
-  ],
+  nsis: {
+    // eslint-disable-next-line no-template-curly-in-string
+    artifactName: '8th-Wall-Setup-${version}-${os}-${arch}.${ext}',
+  },
+  publish: RELEASE === 'true'
+    ? [
+      {
+        provider: 'github',
+        owner: '8thwall',
+        repo: 'desktop',
+      },
+    ]
+    : [],
 }
